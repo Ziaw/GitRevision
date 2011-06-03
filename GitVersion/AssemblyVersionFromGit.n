@@ -66,6 +66,7 @@ namespace GitVersion
 
   module GitRevisionHelper
   {
+    [Memoize]
     public GetRevisionGeneric(path : string) : option[string * string * string]
     {
       // Execute "git describe"

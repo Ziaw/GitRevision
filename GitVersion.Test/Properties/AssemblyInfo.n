@@ -25,4 +25,4 @@ using GitVersion;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("e0819ab5-d6b5-4a6a-935b-98bd0abeac38")]
 
-[assembly: AssemblyVersionFromGit("1.0.0.GitRev")]
+[assembly: AssemblyVersionFromGit("GitTag.0.GitRev")]
