@@ -76,6 +76,7 @@ namespace GitVersion
       process.StartInfo.RedirectStandardOutput = true;
       process.StartInfo.RedirectStandardError = true;
       process.StartInfo.WorkingDirectory = path;
+      process.StartInfo.CreateNoWindow = true;
 
       // Read git output line by line until regex is matched
       def loop(reader) 
