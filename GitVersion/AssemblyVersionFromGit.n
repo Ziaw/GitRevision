@@ -10,6 +10,7 @@ using System.Linq;
 using System.IO;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Nemerle.Extensions;
 
 namespace GitVersion
 {
@@ -31,7 +32,19 @@ namespace GitVersion
           (DateTime.Now.Year % 100).ToString () + DateTime.Now.DayOfYear.ToString ("000")
         }
         
-        match(GitRevisionHelper.GetRevisionGeneric(path))
+        def gitResult = 
+          try
+          {
+            GitRevisionHelper.GetRevisionGeneric(path)
+          }
+          catch
+          {
+            | e =>
+              Message.Warning(myLoc, e.Message);
+              None()
+          }
+        
+        match (gitResult)
         {
           | None() when !fallbackToDate =>
             Message.FatalError (myLoc, "could not obtain revision from Git metadata");
@@ -55,12 +68,13 @@ namespace GitVersion
   {
     public GetRevisionGeneric(path : string) : option[string * string * string]
     {
-      // Execute "git info"
-      def process = System.Diagnostics.Process ();
+      // Execute "git describe"
+      def process = System.Diagnostics.Process();
       process.StartInfo.UseShellExecute = false;
       process.StartInfo.FileName = "git";
       process.StartInfo.Arguments = "describe --tags --long";
       process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.RedirectStandardError = true;
       process.StartInfo.WorkingDirectory = path;
 
       // Read git output line by line until regex is matched
@@ -70,8 +84,8 @@ namespace GitVersion
         {
           | null => 
             None()
-          | line => 
-            def regex = Regex(@"^(?<tag>.+)\-(?<rev>.+)\-(?<commit>.+)$");
+          | line =>
+            def regex = Regex(@"(?<tag>.+)\-(?<rev>.+)\-(?<commit>.+)");
             def mc = regex.Match(line);
 
             if (mc.Success)
@@ -83,7 +97,9 @@ namespace GitVersion
               Some(tag, rev, commit);
             }
             else
-              loop (reader);
+            {
+              loop(reader);
+            }
         }
       }
 
