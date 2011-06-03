@@ -1,0 +1,20 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Console;
+using System.Linq;
+using System.Reflection;
+
+
+module Program
+{
+  Main() : void
+  {
+    def assembly = Assembly.GetExecutingAssembly();
+    WriteLine(assembly.GetName().Version);
+    _ = ReadLine();
+  }
+}

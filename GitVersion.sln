@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "GitVersion", "GitVersion\GitVersion.nproj", "{8A7E9A16-E8DD-4FDF-90B6-18D7AC5D7E86}"
+EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "GitVersion.Test", "GitVersion.Test\GitVersion.Test.nproj", "{2DC9789F-1A80-49D8-BBD3-5D1D683414D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A7E9A16-E8DD-4FDF-90B6-18D7AC5D7E86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A7E9A16-E8DD-4FDF-90B6-18D7AC5D7E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A7E9A16-E8DD-4FDF-90B6-18D7AC5D7E86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A7E9A16-E8DD-4FDF-90B6-18D7AC5D7E86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DC9789F-1A80-49D8-BBD3-5D1D683414D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DC9789F-1A80-49D8-BBD3-5D1D683414D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DC9789F-1A80-49D8-BBD3-5D1D683414D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DC9789F-1A80-49D8-BBD3-5D1D683414D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
