@@ -1,0 +1,143 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq.Enumerable;
+
+using Nemerle.Collections;
+using Nemerle.Compiler.NemerleAttributes;
+using Nemerle.Compiler.Parsetree;
+using Nemerle.Compiler;
+using Nemerle.Macros;
+using Nemerle.Utility;
+using Nemerle; 
+using System.Diagnostics.Trace;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using TT = Nemerle.Compiler.Typedtree;
+
+namespace GitVersion
+{
+  [Nemerle.MacroUsage (Nemerle.MacroPhase.BeforeInheritance,
+                       Nemerle.MacroTargets.Assembly)]
+  macro GeneratedAssemblyVersion(str, defaults = null)
+  {
+  	def version = ExpandEnvHelper.Expand(str, defaults);
+    
+    Manager().Hierarchy.AddAssemblyAttribute(Manager().CoreEnv,
+    	<[ System.Reflection.AssemblyVersion($(version : string)) ]>);
+  }
+  
+  macro ExpandEnv(str, defaults = null)
+  {
+  	def version = ExpandEnvHelper.Expand(str, defaults);
+    
+    <[ $(version : string) ]>;
+  }
+  
+  module ExpandEnvHelper
+  {
+  	VarRegex : Regex = Regex(@"\$([\w_][\w\d_]*)");
+  	
+  	public Expand(strExpr : PExpr, defaults: PExpr) : string
+  	{
+  		def str = match (strExpr)
+  		{
+  			| Literal(Literal.String(s)) => s
+  			| _ => Message.FatalError(strExpr.Location, "Expected string literal.")
+  		}
+  		
+  		
+  		mutable vars = Set();
+  		foreach (m is Match in VarRegex.Matches(str))
+  		{
+  			vars = vars.Add(m.Groups[1].Value);
+  		}
+  		
+  		def defaultValues = Dictionary();
+  		match (defaults)
+  		{
+  			| null => ()
+  			| <[ Defaults(..$parms) ]> =>
+		  		foreach (d in parms)
+		  		{
+		  			| <[ $var = $value ]>  =>
+		  				def varName = var.ToString();
+		  				
+  						def value = match (value) 
+  						{
+  							| Literal(Literal.String(s)) => s
+  							| _ => Message.Error(value.Location, "Default value must be a string."); ""
+  						}
+  						
+		  				unless (vars.Contains(varName))
+			  				Message.Error(var.Location, $"$('$')$varName not found in the template.");
+			  				
+			  			when (defaultValues.ContainsKey(varName))
+			  				Message.Error(var.Location, $"Duplicate $varName.");
+			  				
+			  			defaultValues[varName] = value;
+			  		| _ =>
+		  				Message.Error(d.Location, "Default value expression must have 'x = \"y\"' format.");
+		  				()
+		  		}
+  			| _ =>
+  				Message.FatalError(defaults.Location, "Defaults expression must have Defaults(x = \"y\", x1 = \"y1\",...)' format.");
+  		}
+
+      def path = lazy({
+       	def loc = strExpr.Location;
+      	if (loc.IsSourceFileAvailable)
+      		Path.GetDirectoryName(Path.GetFullPath(loc.File))
+      	else
+          	Directory.GetCurrentDirectory();
+      });
+
+  		//System.Diagnostics.Debugger.Launch();
+  		def evaluateVar(var)
+  		{
+  			def getSpecial()
+  			{
+  				match (var)
+  				{
+    				| "GitTag" => 
+    					Console.Error.WriteLine("Tag");
+    					match (GitRevisionHelper.GetRevisionGeneric(path))
+    					{
+			          | Some( (tag, _rev, _commit) ) => tag
+			          | None() => null
+    					}
+    				| "GitRevision" => 
+    					match (GitRevisionHelper.GetRevisionGeneric(path))
+    					{
+			          | Some( (_tag, rev, _commit) ) => rev
+			          | None() => null
+    					}
+    				| _ => null
+    			}
+  			}
+    		def getEnvironment()
+    		{
+          Environment.GetEnvironmentVariable(var)
+    		}
+    		def getDefault()
+    		{
+    			match (defaultValues.ContainsKey(var))
+    			{
+  					| true => 
+  					  defaultValues[var]
+  					| false =>
+  		  			Message.Error(strExpr.Location, $"$var is not defined and have not default value.");
+  		  			""
+  			  }
+  		  }
+		
+  		  getEnvironment() ?? getSpecial() ?? getDefault()
+		  }
+
+  		VarRegex.Replace(str, MatchEvaluator(m => {
+  			def varName = m.Groups[1].Value;
+    			evaluateVar(varName)
+  		}));
+  	}
+  }
+}

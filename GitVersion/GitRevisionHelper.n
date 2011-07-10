@@ -1,0 +1,96 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Nemerle.Extensions;
+
+namespace GitVersion
+{
+  module GitRevisionHelper
+  {
+    [Memoize]
+    public GetRevisionGeneric(path : string) : option[string * string * string]
+    {
+      def execGit(startInfoConfigurator)
+      {
+        // Execute "git describe"
+        def process = System.Diagnostics.Process();
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.WorkingDirectory = path;
+        process.StartInfo.CreateNoWindow = true;
+        startInfoConfigurator(process.StartInfo);
+      
+        // Read git output line by line until regex is matched
+        def loop(reader) 
+        {
+          match (reader.ReadLine()) 
+          {
+            | null => 
+              None()
+            | line =>
+              regexp match (line)
+              {
+                | @"(?<tag>.+)\-(?<rev>.+)\-(?<commit>.+)" =>
+                  def tag = Regex.Replace(tag, @"[^\d\.]", "");
+                  Some(tag, rev, commit);
+                | _ =>
+                  loop(reader);
+              }
+          }
+        }
+      
+        try
+        {
+          if (process.Start())
+          {
+      	    def revision = loop (process.StandardOutput);
+      	
+      	    // Wait for git client process to terminate
+      	    unless (process.WaitForExit (2000))
+      	      process.Kill ();
+              
+            revision;
+        	}
+        	else
+        	{
+          	None()
+        	}
+        }
+        catch
+        {
+          | e => 
+          	Console.WriteLine(e.ToString());
+          	None();
+        }
+      }
+    
+      def configCommon(si) // mono git or msysgit with git.exe in PATH
+      {
+        si.FileName = "git";
+        si.Arguments = "describe --tags --long";
+      }
+  
+      def configCmd(si) // PATH conatains git.cmd only workaround 
+      {
+        si.FileName = "cmd";
+        si.Arguments = "/C git describe --tags --long";
+      }
+      
+      match (execGit(configCommon))
+      {
+        | Some(_) as x => x
+        | None()       => execGit(configCmd);
+      }
+    }
+  }
+}

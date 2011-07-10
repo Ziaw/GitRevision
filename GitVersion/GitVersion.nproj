@@ -59,7 +59,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyVersionFromGit.n" />
+    <Compile Include="GitRevisionHelper.n" />
+    <Compile Include="ExpandEnv.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>

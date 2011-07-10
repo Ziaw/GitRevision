@@ -1,6 +1,7 @@
 ﻿using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
+using GitVersion;
 
 using System;
 using System.Collections.Generic;
@@ -8,13 +9,14 @@ using System.Console;
 using System.Linq;
 using System.Reflection;
 
+[assembly: GeneratedAssemblyVersion("$GitTag.0.$GitRevision", Defaults(GitTag = "0.0", GitRevision = "99999"))]
+
 
 module Program
 {
   Main() : void
   {
-    def assembly = Assembly.GetExecutingAssembly();
-    WriteLine(assembly.GetName().Version);
-    _ = ReadLine();
+    WriteLine(ExpandEnv("$GitTag.0.$GitRevision", Defaults(GitTag = "0.0", GitRevision = "99999")));
+    _ = ReadKey();
   }
 }
