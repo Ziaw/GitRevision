@@ -21,12 +21,12 @@ Macro have two special variables: GitTag and GitRev. If not found in environment
 Example:
 
 ```nemerle
-[assembly: GeneratedAssemblyVersion("GitTag.0.GitRevision", Defaults(GitTag="3.0", GitRevision="9999"))]
+[assembly: GeneratedAssemblyVersion("$GitTag.0.$GitRevision", Defaults(GitTag="3.0", GitRevision="9999"))]
 ```
 
-Unless GitTag or GitRev environment defined, macro runs "git describe --tags --long" and parse output like "v1.1-42-g23a4f75".
+Unless GitTag or GitRevision environment defined, macro runs "git describe --tags --long" and parse output like "v1.1-42-g23a4f75".
     'GitTag' string replaced with 1.1 (digits and dots characters only of the last tag)
-    'GitRev' string replaced with 42 (revisions count since last tag)
+    'GitRevision' string replaced with 42 (revisions count since last tag)
   
 Assembly version will be "1.1.0.42".
 
